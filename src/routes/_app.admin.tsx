@@ -70,6 +70,7 @@ import {
   createPasswordResetLink,
   dismissPasswordHelp,
   deleteActivationCodes,
+  deleteMember,
   generateActivationCodes,
   getAdminData,
   getAdminPulse,
@@ -966,6 +967,7 @@ function MemberDialog({
   onChanged: () => Promise<void>;
 }) {
   const { busy, act } = useAction();
+  const [deleteUsername, setDeleteUsername] = useState("");
   const [resetUrl, setResetUrl] = useState<string | null>(null);
   const [version, setVersion] = useState(0);
   const [loaded, setLoaded] = useState<{
@@ -1013,6 +1015,7 @@ function MemberDialog({
       onOpenChange={(o) => {
         if (!o) {
           setResetUrl(null);
+          setDeleteUsername("");
           onClose();
         }
       }}
@@ -1041,6 +1044,9 @@ function MemberDialog({
                 <TabsTrigger value="payout">Payout</TabsTrigger>
                 <TabsTrigger value="balance">Balance</TabsTrigger>
                 <TabsTrigger value="history">History</TabsTrigger>
+                {!m.isAdmin && (
+                  <TabsTrigger value="delete">Delete account</TabsTrigger>
+                )}
               </TabsList>
 
               <TabsContent value="overview" className="mt-4 space-y-4">
@@ -1373,6 +1379,51 @@ function MemberDialog({
                     <Spin on={busy === "adjust"} /> Post adjustment
                   </Button>
                 </form>
+              </TabsContent>
+
+              <TabsContent value="delete" className="mt-4 space-y-4">
+                <h3 className="font-display font-bold text-destructive">
+                  Permanently delete account
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  This removes the member, login sessions, wallet credits,
+                  withdrawal history, payout details, and closed grocery orders.
+                  This cannot be undone. Accounts with downline members or
+                  referrals cannot be deleted; suspend them instead. Resolve
+                  pending payouts and open orders first. Previously earned
+                  credits in other accounts remain.
+                </p>
+                <Label htmlFor="delete-member-username">
+                  Type {m.username} to confirm
+                </Label>
+                <Input
+                  id="delete-member-username"
+                  autoComplete="off"
+                  value={deleteUsername}
+                  onChange={(e) => setDeleteUsername(e.target.value)}
+                />
+                <Button
+                  variant="destructive"
+                  disabled={busy !== null || deleteUsername !== m.username}
+                  onClick={async () => {
+                    const result = await act(
+                      "delete-member",
+                      () =>
+                        deleteMember({
+                          data: { id: m.id, username: deleteUsername },
+                        }),
+                      "Member account deleted",
+                    );
+                    if (result) {
+                      setDeleteUsername("");
+                      onClose();
+                      await onChanged();
+                    }
+                  }}
+                >
+                  <Spin on={busy === "delete-member"} />
+                  Permanently delete member
+                </Button>
               </TabsContent>
 
               <TabsContent value="history" className="mt-4 space-y-4">

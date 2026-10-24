@@ -1,27 +1,62 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { Download, Image as ImageIcon, Loader2 } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import { toast } from 'sonner'
+import { createFileRoute } from "@tanstack/react-router";
+import { Download, Image as ImageIcon, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
-import { PageHeader } from '@/components/app-shell'
-import { CopyButton, ReferralLinkField } from '@/components/copy-button'
-import { Button } from '@/components/ui/button'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { useSession } from '@/hooks/use-session'
-import { formatPeso, referralLink, type Plan } from '@/lib/plan'
+import { PageHeader } from "@/components/app-shell";
+import { CopyButton, ReferralLinkField } from "@/components/copy-button";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useSession } from "@/hooks/use-session";
+import { formatPeso, referralLink, type Plan } from "@/lib/plan";
 import {
   downloadDataUrl,
   POSTER_SIZES,
   renderPoster,
   type PosterFormat,
-} from '@/lib/poster'
+} from "@/lib/poster";
 
-export const Route = createFileRoute('/_app/marketing')({
-  head: () => ({ meta: [{ title: 'Marketing Materials · 1MERCADO' }] }),
+export const Route = createFileRoute("/_app/marketing")({
+  head: () => ({ meta: [{ title: "Marketing Materials · 1MERCADO" }] }),
   component: Marketing,
-})
+});
 
-type Script = { id: string; title: string; channel: string; text: string }
+const marketingPhotos = [
+  {
+    src: "/images/marketing/1-mercado-payment-options-poster.png",
+    title: "Payment options",
+  },
+  {
+    src: "/images/marketing/1-mercado-campaign.png",
+    title: "1MERCADO campaign",
+  },
+  {
+    src: "/images/marketing/whatsapp-image-2026-10-09-at-8-53-42-am.jpeg",
+    title: "Community photo 3",
+  },
+  {
+    src: "/images/marketing/whatsapp-image-2026-10-09-at-8-57-27-am.jpeg",
+    title: "Community photo 4",
+  },
+  {
+    src: "/images/marketing/whatsapp-image-2026-10-09-at-8-58-11-am.jpeg",
+    title: "Community photo 5",
+  },
+  {
+    src: "/images/marketing/whatsapp-image-2026-10-19-at-11-26-20-am.jpeg",
+    title: "Community photo 6",
+  },
+  {
+    src: "/images/marketing/whatsapp-image-2026-10-19-at-11-27-34-am.jpeg",
+    title: "Community photo 7",
+  },
+  {
+    src: "/images/marketing/whatsapp-image-2026-10-20-at-2-59-46-pm.jpeg",
+    title: "Community photo 8",
+  },
+];
+
+type Script = { id: string; title: string; channel: string; text: string };
 
 function scripts(
   plan: Plan,
@@ -29,16 +64,16 @@ function scripts(
   code: string,
   name: string,
 ): Script[] {
-  const entry = formatPeso(plan.entryPrice)
-  const per = formatPeso(plan.perActiveAccount)
-  const cap = formatPeso(plan.earningCap)
-  const daily = formatPeso(plan.dailyWithdrawalLimit)
-  const directs = plan.requiredDirects
+  const entry = formatPeso(plan.entryPrice);
+  const per = formatPeso(plan.perActiveAccount);
+  const cap = formatPeso(plan.earningCap);
+  const daily = formatPeso(plan.dailyWithdrawalLimit);
+  const directs = plan.requiredDirects;
   return [
     {
-      id: 'post',
-      title: 'Facebook / Instagram post',
-      channel: 'Feed post',
+      id: "post",
+      title: "Facebook / Instagram post",
+      channel: "Feed post",
       text: `🛒 Mamili, mag-refer, at kumita araw-araw with 1MERCADO Shopping!
 
 ✅ ${entry} one-time entry — walang monthly fees
@@ -53,24 +88,24 @@ Referrer code: ${code}
 #1MERCADO #1MERCADOShopping #EarnWhileYouShop`,
     },
     {
-      id: 'message',
-      title: 'Messenger / Viber / SMS message',
-      channel: 'Direct message',
+      id: "message",
+      title: "Messenger / Viber / SMS message",
+      channel: "Direct message",
       text: `Hi! 👋 Si ${name} ito. May sinalihan akong rewards plan — 1MERCADO Shopping. One-time ${entry} lang, then you earn ${per} for every active account in your line (up to ${cap}). Pwede mag-withdraw sa GCash/Maya/bank.
 
 Gusto mo bang malaman pa? Sign up here: ${link}
 (Referrer code: ${code})`,
     },
     {
-      id: 'caption',
-      title: 'TikTok / Reels caption',
-      channel: 'Short video',
+      id: "caption",
+      title: "TikTok / Reels caption",
+      channel: "Short video",
       text: `POV: your grocery habit starts paying you back 🛒💸 ${per} per active account, ${daily} daily withdrawals. Link in bio or use code ${code} 👉 ${link} #1MERCADO #SideHustlePH #EarnWhileYouShop`,
     },
     {
-      id: 'live',
-      title: 'Live-selling script',
-      channel: 'Facebook / TikTok Live',
+      id: "live",
+      title: "Live-selling script",
+      channel: "Facebook / TikTok Live",
       text: `Magandang gabi, mga ka-1MERCADO! 🙌
 
 1️⃣ Ano ang 1MERCADO Shopping? All-in-one supermarket rewards plan for the masses.
@@ -81,21 +116,21 @@ Gusto mo bang malaman pa? Sign up here: ${link}
 I-comment ang "JOIN" at ise-send ko ang link! O diretso na dito: ${link} — referrer code ${code}.`,
     },
     {
-      id: 'follow1',
-      title: 'Follow-up · day 1',
-      channel: 'Direct message',
+      id: "follow1",
+      title: "Follow-up · day 1",
+      channel: "Direct message",
       text: `Hi! Follow up lang po sa 1MERCADO Shopping na na-share ko kahapon 😊 May tanong ka ba? Ito ulit ang link mo: ${link}`,
     },
     {
-      id: 'follow2',
-      title: 'Follow-up · day 3',
-      channel: 'Direct message',
+      id: "follow2",
+      title: "Follow-up · day 3",
+      channel: "Direct message",
       text: `Kumusta! Marami na ang nag-join sa team natin this week 🎉 Sayang kung hindi ka makakasama sa early part ng line. One-time ${entry} lang. Sign up: ${link} (code ${code})`,
     },
     {
-      id: 'qa',
-      title: 'Q&A replies',
-      channel: 'Comments / chats',
+      id: "qa",
+      title: "Q&A replies",
+      channel: "Comments / chats",
       text: `Q: Magkano ang entry?
 A: One-time ${entry} lang, walang monthly fees.
 
@@ -111,9 +146,9 @@ A: Request sa app — up to ${daily} a day via GCash, Maya o bank. Every payout 
 Sign up: ${link}`,
     },
     {
-      id: 'invite',
-      title: 'Presentation invite',
-      channel: 'Group chat',
+      id: "invite",
+      title: "Presentation invite",
+      channel: "Group chat",
       text: `📣 You're invited to a 1MERCADO Shopping online presentation!
 
 Alamin kung paano kumita ng ${per} per active account at mag-withdraw ng up to ${daily} a day.
@@ -125,9 +160,9 @@ Alamin kung paano kumita ng ${per} per active account at mag-withdraw ng up to $
 Gusto mo nang mag-sign up agad? ${link} (code ${code})`,
     },
     {
-      id: 'welcome',
-      title: 'Welcome message for new members',
-      channel: 'Direct message',
+      id: "welcome",
+      title: "Welcome message for new members",
+      channel: "Direct message",
       text: `Welcome to the team! 🎉 Salamat sa pag-join sa 1MERCADO Shopping.
 
 Next steps:
@@ -137,7 +172,7 @@ Next steps:
 
 Andito lang ako kung may tanong ka! — ${name}`,
     },
-  ]
+  ];
 }
 
 function PosterCard({
@@ -147,26 +182,26 @@ function PosterCard({
   name,
   plan,
 }: {
-  format: PosterFormat
-  link: string
-  code: string
-  name: string
-  plan: Plan
+  format: PosterFormat;
+  link: string;
+  code: string;
+  name: string;
+  plan: Plan;
 }) {
-  const [url, setUrl] = useState<string | null>(null)
-  const [failed, setFailed] = useState(false)
+  const [url, setUrl] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    let cancelled = false
+    let cancelled = false;
     renderPoster(format, { link, code, name, plan })
       .then((u) => !cancelled && setUrl(u))
-      .catch(() => !cancelled && setFailed(true))
+      .catch(() => !cancelled && setFailed(true));
     return () => {
-      cancelled = true
-    }
-  }, [format, link, code, name, plan])
+      cancelled = true;
+    };
+  }, [format, link, code, name, plan]);
 
-  const size = POSTER_SIZES[format]
+  const size = POSTER_SIZES[format];
   return (
     <div className="surface-card flex flex-col gap-4 p-5">
       <div>
@@ -201,32 +236,32 @@ function PosterCard({
         variant="hero"
         disabled={!url}
         onClick={() => {
-          if (!url) return
-          downloadDataUrl(url, `1mercado-${format}-${code}.png`)
-          toast.success('Poster downloaded')
+          if (!url) return;
+          downloadDataUrl(url, `1mercado-${format}-${code}.png`);
+          toast.success("Poster downloaded");
         }}
       >
         <Download /> Download PNG
       </Button>
     </div>
-  )
+  );
 }
 
 function Marketing() {
-  const { member, plan, origin } = useSession()
-  const link = referralLink(member.memberCode, origin)
+  const { member, plan, origin } = useSession();
+  const link = referralLink(member.memberCode, origin);
   const list = scripts(
     plan,
     link,
     member.memberCode,
-    member.fullName.split(' ')[0],
-  )
+    member.fullName.split(" ")[0],
+  );
 
   return (
     <>
       <PageHeader
         title="Marketing Materials"
-        subtitle="Posters and ready-to-send scripts — every one already carries your referral link."
+        subtitle="Download campaign photos and posters, or share ready-to-send scripts with your referral link."
       />
       <section className="surface-card mb-6 grid gap-4 p-5 md:grid-cols-[1fr_auto] md:items-end">
         <div>
@@ -247,6 +282,7 @@ function Marketing() {
         <TabsList>
           <TabsTrigger value="posters">Posters</TabsTrigger>
           <TabsTrigger value="scripts">Scripts</TabsTrigger>
+          <TabsTrigger value="photos">Photos & materials</TabsTrigger>
         </TabsList>
         <TabsContent value="posters" className="mt-4">
           <div className="grid gap-4 md:grid-cols-2">
@@ -264,6 +300,40 @@ function Marketing() {
               name={member.fullName}
               plan={plan}
             />
+          </div>
+        </TabsContent>
+        <TabsContent value="photos" className="mt-4">
+          <p className="mb-4 text-sm text-muted-foreground">
+            Download the original images to share. Add your referral link when
+            posting.
+          </p>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {marketingPhotos.map((photo) => (
+              <article
+                key={photo.src}
+                className="surface-card flex flex-col gap-4 p-4"
+              >
+                <a
+                  href={photo.src}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={`View ${photo.title}`}
+                >
+                  <img
+                    src={photo.src}
+                    alt={photo.title}
+                    loading="lazy"
+                    className="h-64 w-full rounded-xl bg-secondary/50 object-contain"
+                  />
+                </a>
+                <h3 className="font-display font-bold">{photo.title}</h3>
+                <Button variant="outline" className="mt-auto" asChild>
+                  <a href={photo.src} download>
+                    <Download /> Download image
+                  </a>
+                </Button>
+              </article>
+            ))}
           </div>
         </TabsContent>
         <TabsContent value="scripts" className="mt-4">
@@ -295,5 +365,5 @@ function Marketing() {
         </TabsContent>
       </Tabs>
     </>
-  )
+  );
 }

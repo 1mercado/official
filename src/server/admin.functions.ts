@@ -18,6 +18,7 @@ import { db } from "../../db/index.js";
 import {
   activationCodes,
   credits,
+  groceryOrders,
   members,
   payoutAccounts,
   planSettings,
@@ -880,4 +881,71 @@ export const deleteActivationCodes = createServerFn({ method: "POST" })
       .where(data.all ? undefined : inArray(activationCodes.id, data.ids))
       .returning({ id: activationCodes.id });
     return { deleted: deleted.length };
+  });
+
+/** Permanently removes a leaf account after explicit administrator confirmation. */
+export const deleteMember = createServerFn({ method: "POST" })
+  .validator(z.object({ id, username: z.string().trim().min(1) }))
+  .handler(async ({ data }) => {
+    const admin = await requireAdmin();
+    return db.transaction(async (tx) => {
+      await tx.execute(sql`select pg_advisory_xact_lock(1998001)`);
+      await lockPlacement(tx);
+      const [member] = await tx
+        .select()
+        .from(members)
+        .where(eq(members.id, data.id))
+        .for("update");
+      if (!member) throw new Error("Member no longer exists");
+      if (member.id === admin.id || member.isAdmin || member.parentId === null)
+        throw new Error("The administrator and company root cannot be deleted");
+      if (member.username !== data.username)
+        throw new Error("Enter the exact username to confirm deletion");
+      const [dependent] = await tx
+        .select({ id: members.id })
+        .from(members)
+        .where(
+          or(eq(members.parentId, member.id), eq(members.sponsorId, member.id)),
+        )
+        .limit(1);
+      if (dependent)
+        throw new Error(
+          "This member has downline members or referrals. Suspend the account instead.",
+        );
+      const [payout] = await tx
+        .select({ id: withdrawals.id })
+        .from(withdrawals)
+        .where(
+          and(
+            eq(withdrawals.memberId, member.id),
+            inArray(withdrawals.status, ["pending", "approved"]),
+          ),
+        )
+        .limit(1);
+      if (payout)
+        throw new Error(
+          "Resolve pending withdrawals before deleting this account",
+        );
+      const orders = await tx
+        .select()
+        .from(groceryOrders)
+        .where(eq(groceryOrders.memberId, member.id))
+        .for("update");
+      if (
+        orders.some(
+          (order) => order.status === "pending" || order.status === "confirmed",
+        )
+      )
+        throw new Error("Close grocery orders before deleting this account");
+      await tx
+        .delete(groceryOrders)
+        .where(eq(groceryOrders.memberId, member.id));
+      // Preserve other members' earned credits without a dangling member reference.
+      await tx
+        .update(credits)
+        .set({ sourceMemberId: null })
+        .where(eq(credits.sourceMemberId, member.id));
+      await tx.delete(members).where(eq(members.id, member.id));
+      return { deleted: true };
+    });
   });

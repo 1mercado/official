@@ -142,7 +142,11 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
     <div className="relative h-full bg-[oklch(0.22_0.04_160)] text-white [--muted-foreground:oklch(0.85_0.01_160)]">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-linear-to-br from-[oklch(0.42_0.1_155)] via-[oklch(0.3_0.075_158)] to-[oklch(0.2_0.045_160)]"
+        className="pointer-events-none absolute inset-0 bg-cover bg-center"
+        style={{
+          backgroundImage:
+            "linear-gradient(180deg, rgb(7 38 27 / 82%), rgb(7 38 27 / 70%)), url(/sidebar-backdrop.png)",
+        }}
       />
       <div className="relative flex h-full flex-col gap-6 overflow-y-auto p-5">
         <Brand subtitle="Shopping" />
