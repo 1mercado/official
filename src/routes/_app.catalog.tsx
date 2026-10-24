@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useSession } from "@/hooks/use-session";
 import { errorMessage } from "@/lib/utils";
+import { productImage } from "@/lib/product-images";
 import { formatDateTime } from "@/lib/plan";
 import {
   getCatalog,
@@ -281,9 +282,23 @@ function Catalog() {
               {visible.map((p) => (
                 <article className="surface-card flex flex-col p-5" key={p.id}>
                   <div className="mb-5 flex items-center justify-between">
-                    <span className="grid size-12 place-items-center rounded-2xl bg-secondary text-primary">
-                      <Package />
-                    </span>
+                    {productImage(p.name) ? (
+                      <img
+                        src={productImage(p.name)!}
+                        alt={`${p.name} illustration`}
+                        width={80}
+                        height={80}
+                        loading="lazy"
+                        className="size-20 rounded-2xl object-contain"
+                      />
+                    ) : (
+                      <span
+                        className="grid size-20 place-items-center rounded-2xl bg-secondary text-primary"
+                        aria-label="Product image unavailable"
+                      >
+                        <Package />
+                      </span>
+                    )}
                     <Badge variant={p.available ? "success" : "secondary"}>
                       {p.available ? "Available" : "Unavailable"}
                     </Badge>
